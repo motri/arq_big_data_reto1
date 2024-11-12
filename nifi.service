@@ -1,0 +1,14 @@
+          [Unit]
+          Description=Apache NiFi Service
+          After=network.target
+
+          [Service]
+          Type=forking
+          ExecStart=/home/ec2-user/nifi-1.28.0/bin/nifi.sh start
+          ExecStop=/home/ec2-user/nifi-1.28.0/bin/nifi.sh stop
+          User=ec2-user
+          Restart=on-failure
+          RestartSec=10
+
+          [Install]
+          WantedBy=multi-user.target
