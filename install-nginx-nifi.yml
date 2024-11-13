@@ -8,20 +8,11 @@
 
   - name: Get my public IP
     community.general.ipify_facts:
-
-  - name: Create security group for node communication
-    amazon.aws.ec2_security_group:
-      name: hadoop-sg
-      description: sg with total access within hadoop nodes
-      region: us-east-1
-      rules:
-        - proto: all
-          group_name: hadoop-sg
         
   - name: Create a security group for communication to outside
     amazon.aws.ec2_security_group:
-      name: hadoop-master-sg
-      description: sg with partial access to hadoop-master node
+      name: nginx-sg
+      description: sg with partial access to nginx via ssh
       region: us-east-1
       rules:
         - proto: tcp
@@ -37,8 +28,7 @@
       instance_type: t3.large
       network:
         subnet_id: "subnet-0b9466745dac1323b"
-        private_ip_address: "172.31.31.226"
-        public_ip_address: "98.80.128.1"
+        private_ip_address: "172.31.32.21"
       security_groups: 
         - hadoop-sg
         - hadoop-master-sg
