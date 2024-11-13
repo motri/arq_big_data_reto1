@@ -1,0 +1,7 @@
+<configuration>
+    <!-- Set the replication factor to match HDFS, or use the desired replication for NiFi's writes -->
+    <property>
+        <name>dfs.replication</name>
+        <value>3</value> <!-- Match this with the HDFS default if possible -->
+    </property>
+</configuration>

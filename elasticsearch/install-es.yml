@@ -1,0 +1,125 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Get my public IP
+      community.general.ipify_facts:
+
+    - name: Create a security group for Elasticsearch access
+      amazon.aws.ec2_security_group:
+        name: elasticsearch-sg
+        description: Security group with restricted SSH and Elasticsearch access
+        region: us-east-1
+        rules:
+          - proto: tcp
+            cidr_ip: "{{ ipify_public_ip }}/32"
+            ports: [22]
+          - proto: tcp
+            cidr_ip: "172.31.32.21/32"
+            ports: [9200]
+      register: es_security_group
+
+    - name: Launch EC2 instance for Elasticsearch
+      amazon.aws.ec2_instance:
+        state: running
+        name: "elasticsearch"
+        key_name: "vockey"
+        instance_type: t3.medium
+        network:
+          private_ip_address: "172.31.16.107"
+        security_groups:
+          - "{{ es_security_group.group_id }}"
+        image_id: ami-066784287e358dad1
+        region: us-east-1
+        tags:
+          Group: "elasticsearch"
+      register: es_instance_info
+
+    - name: Set instance IP for connection
+      set_fact:
+        es_instance_public_ip: "{{ es_instance_info.instances[0].public_ip_address }}"
+
+    - meta: refresh_inventory
+
+- hosts: tag_Group_elasticsearch
+  become: yes
+  tasks:
+    - name: Install Java
+      ansible.builtin.command: sudo yum install -y java-1.8.0-amazon-corretto java-1.8.0-amazon-corretto-devel
+
+    - name: Set JAVA_HOME environment variable at ~/.bashrc
+      ansible.builtin.shell: echo 'export JAVA_HOME=/usr/lib/jvm/java' >> ~/.bashrc
+
+    - name: Load environment variables
+      become: true
+      ansible.builtin.shell: source /etc/profile
+      args:
+        executable: /bin/bash
+
+    - name: Verify Java installation
+      ansible.builtin.command: java -version
+      register: java_version
+      changed_when: false
+
+    - name: Debug Java version
+      ansible.builtin.debug:
+        msg: "Java version installed: {{ java_version.stdout_lines }}"
+
+    - name: Download Elasticsearch
+      ansible.builtin.get_url:
+        url: "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.10.2-x86_64.rpm"
+        dest: "/tmp/elasticsearch.rpm"
+
+    - name: Import Elasticsearch GPG key
+      rpm_key:
+        state: present
+        key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+    - name: Install Elasticsearch
+      ansible.builtin.yum:
+        name: /tmp/elasticsearch.rpm
+        state: present
+
+    - name: Start and enable Elasticsearch
+      ansible.builtin.systemd:
+        name: elasticsearch
+        enabled: true
+        state: started
+
+    - name: Ensure network.host is set in elasticsearch.yml
+      ansible.builtin.lineinfile:
+        path: /etc/elasticsearch/elasticsearch.yml
+        regexp: '^network\.host:'
+        line: 'network.host: 0.0.0.0'
+        state: present
+
+    - name: Ensure discovery.type is set to single-node in elasticsearch.yml
+      ansible.builtin.lineinfile:
+        path: /etc/elasticsearch/elasticsearch.yml
+        regexp: '^discovery\.type:'
+        line: 'discovery.type: single-node'
+        state: present
+
+    - name: Ensure cluster.name is set in elasticsearch.yml
+      ansible.builtin.lineinfile:
+        path: /etc/elasticsearch/elasticsearch.yml
+        regexp: '^cluster\.name:'
+        line: 'cluster.name: my-application'
+        state: present
+
+    - name: Ensure node.name is set in elasticsearch.yml
+      ansible.builtin.lineinfile:
+        path: /etc/elasticsearch/elasticsearch.yml
+        regexp: '^node\.name:'
+        line: 'node.name: node-1'
+        state: present
+
+    - name: Restart Elasticsearch to apply configuration changes
+      ansible.builtin.service:
+        name: elasticsearch
+        state: restarted
+
+    - name: Restart Elasticsearch to apply configuration
+      ansible.builtin.systemd:
+        name: elasticsearch
+        state: restarted
+

@@ -9,17 +9,25 @@
   - name: Get my public IP
     community.general.ipify_facts:
         
+  - name: Create security group for node communication
+    amazon.aws.ec2_security_group:
+      name: hadoop-sg
+      description: sg with total access within hadoop nodes
+      region: us-east-1
+      rules:
+        - proto: all
+          group_name: hadoop-sg
+        
   - name: Create a security group for communication to outside
     amazon.aws.ec2_security_group:
-      name: nginx-sg
-      description: sg with partial access to nginx via ssh
+      name: hadoop-master-sg
+      description: sg with partial access to hadoop-master node
       region: us-east-1
       rules:
         - proto: tcp
           cidr_ip: "{{ ipify_public_ip }}/32"
           ports: 
           - 22
-
   - name: Start nginx instance
     amazon.aws.ec2_instance:
       state: "running"
