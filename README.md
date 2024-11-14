@@ -6,5 +6,6 @@ Y finalmente e creado una instancia para elasticsearch con una version pre-auth 
 Podemos verificar los resultados usando el ui de Hadoop master y podemos hacer request a elasticsearch usando postman o curl para verificar el indice y su contenido.
 #### Nifi flows
 ![Imagen para el flow en nifi a hdfs](./img/nifi_hdfs_flow.png)
+![Imagen para el flow en nifi a es](./img/nifi_elasticsearch_flow.png)
 #### ES query response of index ip
 ![Imagen mostrando la respuesta de es tras ejecutar nifi ](./img/es_get_request.png)
