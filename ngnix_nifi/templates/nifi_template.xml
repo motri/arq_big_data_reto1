@@ -2,7 +2,7 @@
 <template encoding-version="1.3">
     <description></description>
     <groupId>25e1f10d-0193-1000-3d8a-977592425a8c</groupId>
-    <name>tamplaate1</name>
+    <name>nifi_template</name>
     <snippet>
         <connections>
             <id>01a7da45-1f86-381e-0000-000000000000</id>
