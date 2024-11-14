@@ -1,4 +1,4 @@
-He extendido y creado los playbooks necesarios para lanzar las instancias para ngnix and nifi, hadoop cluster y elasticsearch
+He extendido y creado los playbooks necesarios para lanzar las instancias para ngnix and nifi, hadoop cluster y elasticsearch.
 En el caso de la primera, he añadido un ip privado a la configuracion de la instancia ec2 para poder asi referenciarlo en los grupos de seguridad etc.
 Tras esto e añadido los pasos necesarios para installar JAVA, añadir el path, descargar nifi, empezar el servicio nifi, actualizar el usuario/contraseña, obtener el token para el rest-api, subir la template, iniciarla e iniciar todos los procesadores. Tambien e añadido los xml necesarios para poder conectar con hdfs a traves de puthdfs.
 En el cluster de hadoop, e utilizado el ip privado de da la instancia nginx_nifi para crear una regla en el security group para permitir el trafico desde la misma.
