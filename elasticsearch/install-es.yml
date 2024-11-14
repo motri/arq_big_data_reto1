@@ -12,7 +12,7 @@
         rules:
           - proto: tcp
             cidr_ip: "{{ ipify_public_ip }}/32"
-            ports: [22]
+            ports: [22,9200]
           - proto: tcp
             cidr_ip: "172.31.32.21/32"
             ports: [9200]
@@ -123,3 +123,19 @@
         name: elasticsearch
         state: restarted
 
+    - name: Create ip index
+      ansible.builtin.uri:
+        url: "http://172.31.16.107:9200/ip"
+        method: PUT
+        body_format: json
+        body: |
+          {
+            "settings": {
+              "number_of_shards": 1,
+              "number_of_replicas": 1
+            }
+          }
+        validate_certs: false
+        status_code: [200, 201]
+
+  
